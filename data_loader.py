@@ -47,7 +47,7 @@ def clean_text(text: str) -> str:
 
 
 def remove_duplicates(passages: list):
-    lsh = MinHashLSH(threshold=0.9, num_perm=64)
+    checker = MinHashLSH(threshold=0.9, num_perm=64)
 
     final_passages = []
     copies_removed = 0
@@ -59,13 +59,15 @@ def remove_duplicates(passages: list):
         for word in words:
             id_card.update(word.encode('utf8'))
 
-        if lsh.query(id_card):
+        if checker.query(id_card):
             copies_removed = copies_removed + 1
             continue
 
         else:
-            lsh.insert(p.id, id_card)
+            checker.insert(p.id, id_card)
             final_passages.append(p)
+    print(f"Kept {len(final_passages)}. Threw away {copies_removed}")
+    return final_passages
 
 
 def get_datasets():
