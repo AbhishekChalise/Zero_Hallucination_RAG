@@ -3200,6 +3200,7 @@ dependencies = [
     { name = "langchain-google-genai" },
     { name = "numpy" },
     { name = "pandas" },
+    { name = "transformers" },
 ]
 
 [package.metadata]
@@ -3213,6 +3214,7 @@ requires-dist = [
     { name = "langchain-google-genai", specifier = ">=4.3.5" },
     { name = "numpy", specifier = ">=2.5.2" },
     { name = "pandas", specifier = ">=3.0.5" },
+    { name = "transformers", specifier = ">=5.15.1" },
 ]
 
 [[package]]

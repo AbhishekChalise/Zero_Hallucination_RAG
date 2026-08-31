@@ -1,6 +1,6 @@
 import re, unicodedata
 from datasets import load_dataset
-from datasketch import MiniHash, MinHashLSH
+from datasketch import MinHash, MinHashLSH
 from dataclasses import dataclass, field
 
 @dataclass
@@ -49,25 +49,23 @@ def clean_text(text: str) -> str:
 def remove_duplicates(passages: list):
     checker = MinHashLSH(threshold=0.9, num_perm=64)
 
-    final_passages = []
-    copies_removed = 0
+    final_passage = []
+    cleared = 0
 
     for p in passages:
-        id_card = MiniHash(num_perm=64)
+        id_card = MinHash(num_perm=64)
 
-        words = p.text.split()
+        words = p.title.split()
+
         for word in words:
             id_card.update(word.encode('utf8'))
 
         if checker.query(id_card):
-            copies_removed = copies_removed + 1
+            cleared = cleared + 1 
             continue
-
         else:
-            checker.insert(p.id, id_card)
-            final_passages.append(p)
-    print(f"Kept {len(final_passages)}. Threw away {copies_removed}")
-    return final_passages
+            checker.insert(p.id,id_card)
+            final_passage.append()
 
 
 def get_datasets():
@@ -101,13 +99,3 @@ def get_datasets():
             break
 
     return list(passages.values()), question
-
-
-if __name__ == "__main__":
-    corpus, qa_items = get_datasets()
-
-    print(f"Title: {corpus[0].title}")
-    print(f"Text: {corpus[0].text}")
-    
-    print(f"Q: {qa_items[0].question}")
-    print(f"A: {qa_items[0].answer}")
