@@ -2,6 +2,7 @@ import inspect
 import re
 from transformers import AutoTokenizer
 from dataclasses import dataclass, field
+from data_loader import Passage
 
 max_token = 256
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2")
@@ -30,6 +31,7 @@ def smart_chunk_text(passages: list):
         current_sentences = []
         current_token_count = 0
         chunk_id = 0
+        count = 0
 
         for sentence in sentences:
             
@@ -37,6 +39,7 @@ def smart_chunk_text(passages: list):
             if not sentence:
                 continue
 
+            old_count = count
             count = len(tokenizer.encode(sentence))
 
             if current_token_count + count <= max_token:
@@ -54,10 +57,12 @@ def smart_chunk_text(passages: list):
                     )
                     chunk_id += 1
                     current_sentences = [current_sentences[-1]]
-                    current_token_count = count
+                    current_sentences.append(sentence)
+                    current_token_count = count + old_count
 
                 else:
                     current_sentences = [sentence]
+                    current_token_count = count
             
         if current_sentences:
             
