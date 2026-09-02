@@ -77,16 +77,3 @@ def smart_chunk_text(passages: list):
 
 
     return chunks
-
-if __name__ == "__main__":
-    sample_passages = [
-        Passage(
-            id="doc_1",
-            title="Sample Passage",
-            text="This is the first sentence. Here is the second sentence which adds more detail. Finally, this is the third sentence to complete the chunking test."
-        )
-    ]
-
-    result_chunks = smart_chunk_text(sample_passages)
-    for c in result_chunks:
-        print(c)
