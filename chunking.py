@@ -18,7 +18,7 @@ def smart_chunk_text(passages: list):
     chunks = []
 
     for passage in passages:
-        passage_id = passage.id if hasattr(passage, 'id') else passage.get('id', 'doc_0')
+        passage_id = passage.id if hasattr(passage, 'id') else None
         title = passage.title if hasattr(passage, 'title') else passage.get('title', '')
         text = passage.text if hasattr(passage, 'text') else passage.get('text', '')
 
@@ -53,13 +53,14 @@ def smart_chunk_text(passages: list):
                         )
                     )
                     chunk_id += 1
-                    current_sentences = []
+                    current_sentences = [current_sentences[-1]]
                     current_token_count = count
 
                 else:
-                    current_sentences = sentence
+                    current_sentences = [sentence]
             
         if current_sentences:
+            
             chunks.append(
                 Chunk(
                     chunk_id=f"{passage_id}_chunk_{chunk_id}",
