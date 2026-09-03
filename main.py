@@ -8,7 +8,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 load_dotenv()
 
-client = AsyncGroq(os.environ.get())
+client = AsyncGroq(api_key = os.environ.get("GROQ_API_KEY"))
 
 class LocalLLM:
 
