@@ -19,7 +19,7 @@ class LocalLLM:
             use_fp16 = False
         )
 
-    def chat(self, system_chat: str, user_chat: str, temperature: float = None):
+    def chat(self, system_chat: str, user_chat: str, temperature: float = 0.0):
 
         response = client.chat.completions.create(
             model = self.model,

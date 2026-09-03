@@ -3,6 +3,7 @@ import re
 from transformers import AutoTokenizer
 from dataclasses import dataclass, field
 from data_loader import Passage
+from main import llm
 
 max_token = 256
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2")
@@ -13,8 +14,15 @@ class Chunk:
     passage_id: str
     title: str
     text: str
+    summary: str
 
-def smart_chunk_text(passages: list):
+def generate_summary(chunks: Chunk):
+    for chunk in chunks:
+        prompt = f"Here is a document titled '{chunk.title}':\n{chunk.text}\n\nGive a short, single-sentence context (<=25 words) that situates this chunk within the document so it can be retrieved on its own. Answer with the sentence only."
+        summary = llm.chat(system_chat="Write clear concise retrieval context.", user_chat=prompt, temperature=0)
+        chunk.summary = summary
+
+def smart_chunk_text(passages: str):
 
     chunks = []
 
@@ -52,7 +60,8 @@ def smart_chunk_text(passages: list):
                             chunk_id=f"{passage_id}_chunk_{chunk_id}",
                             passage_id=passage_id,
                             title=title,
-                            text=" ".join(current_sentences)
+                            text=" ".join(current_sentences),
+                            summary= generate_summary("") # like call the object here !
                         )
                     )
                     chunk_id += 1
@@ -71,9 +80,11 @@ def smart_chunk_text(passages: list):
                     chunk_id=f"{passage_id}_chunk_{chunk_id}",
                     passage_id=passage_id,
                     title=title,
-                    text=" ".join(current_sentences)
+                    text=" ".join(current_sentences),
+                    summary=""
                 )
             )
 
+    generate_summary(chunks)
 
     return chunks

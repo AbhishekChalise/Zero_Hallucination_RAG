@@ -18,28 +18,6 @@ class QAItem:
     answerable: bool = True
     correct_article_titles: list = field(default_factory=list)
 
-"""
-# This is what the raw data actually looks like:
-raw_mess = {
-    "id": "5a8b57f2554299361d1a6c22",
-    "question": "Were Scott Derrickson and Ed Wood of the same nationality?",
-    "answer": "yes",
-    
-    "supporting_facts": {
-        "title": ["Scott Derrickson", "Ed Wood"],
-        "sent_id": [0, 0]
-    },
-    
-    "context": {
-        "title": ["Scott Derrickson", "Ed Wood"],
-        "sentences": [
-            ["Scott Derrickson is a director.", "He is American."],
-            ["Ed Wood was a filmmaker.", "He was also American."]
-        ]
-    }
-}
-"""
-
 def clean_text(text: str) -> str:
     text = unicodedata.normalize("NFKC", text)        
     text = re.sub(r"[ \t]+", " ", text)   
