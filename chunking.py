@@ -1,8 +1,8 @@
 import inspect
 import re
+import asyncio
 from transformers import AutoTokenizer
-from dataclasses import dataclass, field
-from data_loader import Passage
+from dataclasses import dataclass
 from main import llm
 
 max_token = 256
@@ -16,11 +16,17 @@ class Chunk:
     text: str
     summary: str
 
-def generate_summary(chunks: Chunk):
-    for chunk in chunks:
+
+async def generate_summary(chunks: list):
+    async def process_chunk(chunk: Chunk):
         prompt = f"Here is a document titled '{chunk.title}':\n{chunk.text}\n\nGive a short, single-sentence context (<=25 words) that situates this chunk within the document so it can be retrieved on its own. Answer with the sentence only."
-        summary = llm.chat(system_chat="Write clear concise retrieval context.", user_chat=prompt, temperature=0)
+        summary = await llm.chat(system_chat="Write clear concise retrieval context.", user_chat=prompt, temperature=0)
         chunk.summary = summary
+        return chunk
+    task = [process_chunk(c) for c in chunks]
+    updated_chunks = await asyncio.gather(*task)
+    return updated_chunks
+
 
 def smart_chunk_text(passages: str):
 
@@ -61,7 +67,7 @@ def smart_chunk_text(passages: str):
                             passage_id=passage_id,
                             title=title,
                             text=" ".join(current_sentences),
-                            summary= generate_summary("") # like call the object here !
+                            summary= ""
                         )
                     )
                     chunk_id += 1
@@ -85,6 +91,6 @@ def smart_chunk_text(passages: str):
                 )
             )
 
-    generate_summary(chunks)
+    chunks = asyncio.run(generate_summary(chunks))
 
     return chunks
