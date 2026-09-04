@@ -1,11 +1,11 @@
-import inspect
 import re
-import asyncio
-import json
 import os
-from transformers import AutoTokenizer
-from dataclasses import dataclass
+import json
+import asyncio
+import inspect
 from main import llm
+from dataclasses import dataclass
+from transformers import AutoTokenizer
 
 max_token = 256
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2")
