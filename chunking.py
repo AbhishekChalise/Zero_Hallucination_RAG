@@ -1,6 +1,7 @@
 import inspect
 import re
 import asyncio
+from data_loader import Passage
 from transformers import AutoTokenizer
 from dataclasses import dataclass
 from main import llm
@@ -94,3 +95,17 @@ def smart_chunk_text(passages: str):
     chunks = asyncio.run(generate_summary(chunks))
 
     return chunks
+
+
+if __name__ == "__main__":
+    test_passages = [
+        Passage(id="1", title="Scott Derrickson", text="Scott Derrickson is a director. He is American. He directed Doctor Strange."),
+        Passage(id="2", title="Ed Wood", text="Ed Wood was a filmmaker. He was American. He made Plan 9.")
+    ]
+    
+    final_chunks = smart_chunk_text(test_passages)
+    
+    for c in final_chunks:
+        print(f"\nTitle: {c.title}")
+        print(f"Summary: {c.summary}")
+        print(f"Text: {c.text}")
