@@ -3,7 +3,6 @@ from groq import AsyncGroq
 from data_class import config
 from dotenv import load_dotenv
 from FlagEmbedding import FlagReranker
-
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 load_dotenv()

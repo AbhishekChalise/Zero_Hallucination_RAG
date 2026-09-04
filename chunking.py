@@ -40,8 +40,7 @@ def smart_chunk_text(passages: str):
         if not text:
             continue
 
-        sentences = re.split(r'(?<=[.!?]) +', text)
-
+        sentences = re.split(r'(?<=[\.!?])(?<!\bDr)(?<!\bMr)(?<!\bMrs) +', text)
         current_sentences = []
         current_token_count = 0
         chunk_id = 0
