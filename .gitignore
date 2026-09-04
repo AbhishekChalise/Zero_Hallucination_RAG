@@ -34,3 +34,4 @@ archive.zip
 .env
 .venv/
 __pycache__/
+data.json

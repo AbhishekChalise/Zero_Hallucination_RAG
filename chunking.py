@@ -1,6 +1,8 @@
 import inspect
 import re
 import asyncio
+import json
+import os
 from transformers import AutoTokenizer
 from dataclasses import dataclass
 from main import llm
@@ -15,7 +17,7 @@ class Chunk:
     title: str
     text: str
     summary: str
-
+    
 
 async def generate_summary(chunks: list):
     async def process_chunk(chunk: Chunk):
@@ -30,10 +32,26 @@ async def generate_summary(chunks: list):
 
 def smart_chunk_text(passages: str):
 
+    checkpoint = []
+    processed_passage_ids = set()
+
+    if os.path.exists("data.json"):
+        try:
+            with open("data.json", "r", encoding="utf-8") as f:
+                checkpoint = json.load(f)
+                processed_passage_ids = {c["passage_id"] for c in checkpoint}
+        except (json.JSONDecodeError, OSError):
+            checkpoint = []
+            processed_passage_ids = set()
+
     chunks = []
 
     for passage in passages:
         passage_id = passage.id if hasattr(passage, 'id') else None
+        
+        if passage_id in processed_passage_ids:
+            continue
+
         title = passage.title if hasattr(passage, 'title') else passage.get('title', '')
         text = passage.text if hasattr(passage, 'text') else passage.get('text', '')
 
@@ -90,6 +108,12 @@ def smart_chunk_text(passages: str):
                 )
             )
 
-    chunks = asyncio.run(generate_summary(chunks))
+    if chunks:
+        chunks = asyncio.run(generate_summary(chunks))
+        new_checkpoint = [{"chunk_id":c.chunk_id, "passage_id":c.passage_id, "title": c.title, "text":c.text, "summary": c.summary} for c in chunks]
+        checkpoint.extend(new_checkpoint)
 
-    return chunks
+        with open("data.json","w", encoding = "utf-8") as f:
+            json.dump(checkpoint, f, indent=4)
+
+    return checkpoint
