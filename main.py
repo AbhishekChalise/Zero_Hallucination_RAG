@@ -10,7 +10,7 @@ from vram import vram_snapshot
 
 load_dotenv()
 
-vram_snapshot("Before Init")
+# vram_snapshot("Before Init")
 
 use_fp16 = True if getattr(config, "mode") == "vllm" else False
 
@@ -35,7 +35,7 @@ class LocalLLM:
             reranker_model,
             use_fp16 = use_fp16
         )
-        vram_snapshot("After Init Models")
+        # vram_snapshot("After Init Models")
 
     async def chat(self, system_chat: str, user_chat: str, temperature: float = 0.0):
 
@@ -61,7 +61,7 @@ class LocalLLM:
         )
 
     def rerank(self, query: str, documents: list[str]):
-        vram_snapshot("Before Rerank")
+        # vram_snapshot("Before Rerank")
 
         pairs = [[query, document] for document in documents]
 
@@ -75,7 +75,7 @@ class LocalLLM:
             key= lambda x : x[1],
             reverse = True
         )
-        vram_snapshot("After Rerank")
+        # vram_snapshot("After Rerank")
 
         return ranked
 
