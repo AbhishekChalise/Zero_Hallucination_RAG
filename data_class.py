@@ -26,5 +26,3 @@ class Config:
     seed: int = 42
 
 config = Config()
-
-
