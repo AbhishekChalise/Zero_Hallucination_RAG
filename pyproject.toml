@@ -12,7 +12,10 @@ dependencies = [
     "groq>=1.6.0",
     "langchain>=1.3.16",
     "langchain-google-genai>=4.3.5",
+    "langchain-openai>=1.6.0",
     "numpy>=2.5.2",
+    "openai>=3.8.0",
+    "openapi>=2.0.0",
     "pandas>=3.0.5",
     "transformers>=5.15.1",
 ]

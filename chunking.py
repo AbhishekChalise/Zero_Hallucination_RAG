@@ -109,6 +109,7 @@ def smart_chunk_text(passages: str):
             )
 
     if chunks:
+
         chunks = asyncio.run(generate_summary(chunks))
         new_checkpoint = [{"chunk_id":c.chunk_id, "passage_id":c.passage_id, "title": c.title, "text":c.text, "summary": c.summary} for c in chunks]
         checkpoint.extend(new_checkpoint)
@@ -116,4 +117,7 @@ def smart_chunk_text(passages: str):
         with open("data.json","w", encoding = "utf-8") as f:
             json.dump(checkpoint, f, indent=4)
 
-    return checkpoint
+        return chunks
+    else:
+        final_chunk = [Chunk(**c) for c in checkpoint]
+        return final_chunk

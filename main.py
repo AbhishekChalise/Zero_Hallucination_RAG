@@ -1,22 +1,36 @@
 import os
 from groq import AsyncGroq
 from data_class import config
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from FlagEmbedding import FlagReranker
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 load_dotenv()
 
-client = AsyncGroq(api_key = os.environ.get("GROQ_API_KEY"))
+use_fp16 = True if getattr(config, "mode") == "vllm" else False
+
+if getattr(config, "mode") == "vllm":
+    client = AsyncOpenAI(base_url = config.vllm_base_url, api_key="EMPTY")
+elif getattr(config, "mode") == "api":
+    client = AsyncGroq(api_key = os.environ.get("GROQ_API_KEY"))
+else:
+    client = None
 
 class LocalLLM:
 
     def __init__(self, model: str, embedding_model: str, reranker_model: str):
-        self.model = model
-        self.embedding_model = embedding_model
+        if getattr(config, "mode") == "vllm":
+            self.model = config.vllm_gen_model
+            self.embedding_model = config.vllm_embedding_model
+        else:
+            self.model = model
+            self.embedding_model = embedding_model
+
         self.reranker = FlagReranker(
             reranker_model,
-            use_fp16 = False
+            use_fp16 = use_fp16
         )
 
     async def chat(self, system_chat: str, user_chat: str, temperature: float = 0.0):
@@ -32,6 +46,12 @@ class LocalLLM:
         return response.choices[0].message.content
 
     def embedder_model(self):
+        if getattr(config, "mode") == "vllm":
+            return OpenAIEmbeddings(
+                model = self.embedding_model,
+                openai_api_base=config.vllm_base_url,
+                openai_api_key="EMPTY"
+            )
         return GoogleGenerativeAIEmbeddings(
             model = self.embedding_model,
         )

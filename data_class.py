@@ -2,6 +2,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
+    mode: str = "api"  
+    vllm_base_url: str = "http://localhost:8000/v1"
+    vllm_gen_model: str = "Qwen/Qwen2.5-7B-Instruct"
+    vllm_embedding_model: str = "BAAI/bge-m3"
+
     gen_model: str = "openai/gpt-oss-20b"
     embedding_model: str = "models/gemini-embedding-2"
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
