@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from FlagEmbedding import FlagReranker
 from langchain_openai import OpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
+from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 
 load_dotenv()
 
@@ -31,20 +31,20 @@ class LocalLLM:
             self.model = config.vllm_gen_model
             # self.embedding_model = config.vllm_embedding_model
 
-            self.embed_tok = AutoTokenizer.from_pretrained(embedding_model).to("cuda")
-            self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16)
+            self.embed_tok = AutoTokenizer.from_pretrained(embedding_model)
+            self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16).to("cuda")
 
             self.rerank_tok = AutoTokenizer.from_pretrained(reranker_model)
-            self.rerank_embed = AutoModel.from_pretrained(reranker_model).to('cuda')
+            self.rerank_embed = AutoModelForSequenceClassification.from_pretrained(reranker_model, torch_dtype = torch.float16).to('cuda')
 
         else:
             self.model = model
             self.embedding_model = embedding_model
 
-        self.reranker = FlagReranker(
-            reranker_model,
-            use_fp16 = use_fp16
-        )
+            self.reranker = FlagReranker(
+                reranker_model,
+                use_fp16 = use_fp16
+            )
 
     async def chat(self, system_chat: str, user_chat: str, temperature: float = 0.0):
 
@@ -74,14 +74,14 @@ class LocalLLM:
     async def rerank(self, query: str, documents: list[str]):
         # vram_snapshot("Before Rerank")
         if getattr(config, "mode") == "vllm":
-            tei_url = f"{config.tei_base_url}/rerank"
-            payload = {"query": query, "texts": documents}
-
-            async with aiohttp.ClientSession() as session:
-                async with session.post(tei_url, json = payload) as response:
-                    result = await response.json()
-                    scores = [item["score"] for item in result]
-
+            scores = []
+            for doc in documents:
+                pair = [query,doc]
+                inputs = self.rerank_tok(pair, padding = True, truncation = True, return_tensors = "pt").to("cuda")
+                with torch.no_grad():
+                    output = self.rerank_embed(**inputs)
+                    score = output.logits.squeeze().item()
+                    scores.append(score)
         else:
             pairs = [[query, document] for document in documents]
 
