@@ -4,12 +4,12 @@ import aiohttp
 from groq import AsyncGroq
 from data_class import config
 from openai import AsyncOpenAI
+from vram import vram_snapshot
 from dotenv import load_dotenv
 from FlagEmbedding import FlagReranker
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
-from vram import vram_snapshot
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 
 load_dotenv()
 
@@ -31,8 +31,8 @@ class LocalLLM:
             self.model = config.vllm_gen_model
             # self.embedding_model = config.vllm_embedding_model
 
-            self.embed_tok = AutoTokenizer.from_pretrained(embedding_model)
-            self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16).to("cuda")
+            self.embed_tok = AutoTokenizer.from_pretrained(embedding_model).to("cuda")
+            self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16)
 
             self.rerank_tok = AutoTokenizer.from_pretrained(reranker_model)
             self.rerank_embed = AutoModel.from_pretrained(reranker_model).to('cuda')
@@ -60,7 +60,13 @@ class LocalLLM:
 
     def embedder_model(self, texts: list):
         if getattr(config, "mode") == "vllm":
-            inputs = 
+            inputs = self.embed_tok(texts, padding = True, truncation = True, return_tensors = "pt").to("cuda")
+            with torch.no_grad():
+                output = self.embedding_model(**inputs)
+                embeddings = output.last_hidden_state.mean(dim=1)
+                embeddings = torch.nn.functional.normalize(embeddings, p=2, dim =1)
+                return embeddings.cpu().tolist()
+
         return GoogleGenerativeAIEmbeddings(
             model = self.embedding_model,
         )
