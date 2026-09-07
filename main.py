@@ -1,9 +1,12 @@
 import os
+import torch 
+import aiohttp
 from groq import AsyncGroq
 from data_class import config
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from FlagEmbedding import FlagReranker
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
 from vram import vram_snapshot
@@ -26,7 +29,10 @@ class LocalLLM:
     def __init__(self, model: str, embedding_model: str, reranker_model: str):
         if getattr(config, "mode") == "vllm":
             self.model = config.vllm_gen_model
-            self.embedding_model = config.vllm_embedding_model
+            # self.embedding_model = config.vllm_embedding_model
+            self.embed_tok = AutoTokenizer(embedding_model)
+            self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16).to("cuda")
+
         else:
             self.model = model
             self.embedding_model = embedding_model
@@ -35,7 +41,6 @@ class LocalLLM:
             reranker_model,
             use_fp16 = use_fp16
         )
-        # vram_snapshot("After Init Models")
 
     async def chat(self, system_chat: str, user_chat: str, temperature: float = 0.0):
 
@@ -60,15 +65,24 @@ class LocalLLM:
             model = self.embedding_model,
         )
 
-    def rerank(self, query: str, documents: list[str]):
+    async def rerank(self, query: str, documents: list[str]):
         # vram_snapshot("Before Rerank")
+        if getattr(config, "mode") == "vllm":
+            tei_url = f"{config.tei_base_url}/rerank"
+            payload = {"query": query, "texts": documents}
 
-        pairs = [[query, document] for document in documents]
+            async with aiohttp.ClientSession() as session:
+                async with session.post(tei_url, json = payload) as response:
+                    result = await response.json()
+                    scores = [item["score"] for item in result]
 
-        scores = self.reranker.compute_score(
-            pairs,
-            normalize = True
-        )
+        else:
+            pairs = [[query, document] for document in documents]
+
+            scores = self.reranker.compute_score(
+                pairs,
+                normalize = True
+            )
 
         ranked = sorted(
             zip(documents, scores),

@@ -6,6 +6,7 @@ class Config:
     vllm_base_url: str = "http://localhost:8000/v1"
     vllm_gen_model: str = "Qwen/Qwen2.5-7B-Instruct"
     vllm_embedding_model: str = "BAAI/bge-m3"
+    tei_url: str = "http://localhost:8080"
 
     gen_model: str = "openai/gpt-oss-20b"
     embedding_model: str = "models/gemini-embedding-2"
