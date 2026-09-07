@@ -30,8 +30,12 @@ class LocalLLM:
         if getattr(config, "mode") == "vllm":
             self.model = config.vllm_gen_model
             # self.embedding_model = config.vllm_embedding_model
-            self.embed_tok = AutoTokenizer(embedding_model)
+
+            self.embed_tok = AutoTokenizer.from_pretrained(embedding_model)
             self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16).to("cuda")
+
+            self.rerank_tok = AutoTokenizer.from_pretrained(reranker_model)
+            self.rerank_embed = AutoModel.from_pretrained(reranker_model).to('cuda')
 
         else:
             self.model = model
@@ -54,13 +58,9 @@ class LocalLLM:
         )
         return response.choices[0].message.content
 
-    def embedder_model(self):
+    def embedder_model(self, texts: list):
         if getattr(config, "mode") == "vllm":
-            return OpenAIEmbeddings(
-                model = self.embedding_model,
-                openai_api_base=config.vllm_base_url,
-                openai_api_key="EMPTY"
-            )
+            inputs = 
         return GoogleGenerativeAIEmbeddings(
             model = self.embedding_model,
         )
