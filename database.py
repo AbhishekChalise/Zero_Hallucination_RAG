@@ -1,13 +1,11 @@
 import lancedb, json
 from main import llm
 
-
 def load_dataset():
     with open ('data.json', 'r') as f:
         my_list = json.load(f)
 
     return my_list
-
 
 def hybrid_data_dictonary():
 
@@ -35,7 +33,15 @@ def hybrid_data_dictonary():
 
     return hybrid_data
 
+def build_database():
 
+    data_to_insert = hybrid_data_dictonary()
+    db = lancedb.connect("rag_data")
+    # Create the table and insert the data.
+    table = db.create_table("rag_corpus", data = data_to_insert)
+    # Creating the BM25 index.
+    table.create_fts_index("text")
+    print("Database and BM25 index successfully built!")
 
-
-
+if __name__ == "__main__":
+    build_database()
