@@ -1,7 +1,7 @@
 import re, unicodedata
 from datasets import load_dataset
-from datasketch import MinHash, MinHashLSH
 from dataclasses import dataclass, field
+from datasketch import MinHash, MinHashLSH
 
 @dataclass
 class Passage:

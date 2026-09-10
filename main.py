@@ -67,9 +67,10 @@ class LocalLLM:
                 embeddings = torch.nn.functional.normalize(embeddings, p=2, dim =1)
                 return embeddings.cpu().tolist()
 
-        return GoogleGenerativeAIEmbeddings(
+        embedder = GoogleGenerativeAIEmbeddings(
             model = self.embedding_model,
         )
+        return embedder.embed_documents(texts)
 
     async def rerank(self, query: str, documents: list[str]):
         # vram_snapshot("Before Rerank")
