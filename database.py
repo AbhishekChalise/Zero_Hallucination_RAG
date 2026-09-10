@@ -27,9 +27,9 @@ def hybrid_data_dictonary():
             hybrid_data.append(
                 {
                   "vector": vector,
-                  "text": data_i["text"],
-                  "title": data_i['title'],
-                  "summary": data_i['summary']
+                  "text": chunk["text"],
+                  "title": chunk['title'],
+                  "summary": chunk['summary']
                 }
             )
 
