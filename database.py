@@ -1,5 +1,7 @@
-import lancedb, json
+import lancedb, json, torch
+from data_class import config
 from main import llm
+from vram import vram_snapshot
 
 def load_dataset():
     with open ('data.json', 'r') as f:
@@ -41,7 +43,11 @@ def build_database():
     table = db.create_table("rag_corpus", data = data_to_insert)
     # Creating the BM25 index.
     table.create_fts_index("text")
-    print("Database and BM25 index successfully built!")
 
+    vram_snapshot("Before Embedding")
+    if getattr(config, "mode") == "vllm":
+        del llm.embedding_model
+        torch.cuda.empty_cache()
+    vram_snapshot("After Embedding")
 if __name__ == "__main__":
     build_database()
