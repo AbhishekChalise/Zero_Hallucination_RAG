@@ -31,8 +31,9 @@ class LocalLLM:
             self.model = config.vllm_gen_model
             # self.embedding_model = config.vllm_embedding_model
 
-            self.embed_tok = AutoTokenizer.from_pretrained(embedding_model)
-            self.embedding_model = AutoModel.from_pretrained(embedding_model, torch_dtype = torch.float16).to("cuda")
+            self.embedding_model_name = embedding_model
+            self.embed_tok = None
+            self.embedding_model = None
 
             self.rerank_tok = AutoTokenizer.from_pretrained(reranker_model)
             self.rerank_embed = AutoModelForSequenceClassification.from_pretrained(reranker_model, torch_dtype = torch.float16).to('cuda')
@@ -58,8 +59,20 @@ class LocalLLM:
         )
         return response.choices[0].message.content
 
+    def unload_embedder(self):
+        if self.embedding_model is not None and getattr(config, "mode") == "vllm":
+            del self.embedding_model
+            self.embedding_model = None
+            torch.cuda.empty_cache()
+
+    def ensure_embedder_loaded(self):
+        if self.embedding_model is None and getattr(config, "mode") == "vllm":
+            self.embed_tok = AutoTokenizer.from_pretrained(self.embedding_model_name)
+            self.embedding_model = AutoModel.from_pretrained(self.embedding_model_name, torch_dtype=torch.float16).to("cuda")      
+
     def embedder_model(self, texts: list):
         if getattr(config, "mode") == "vllm":
+            self.ensure_embedder_loaded()
             inputs = self.embed_tok(texts, padding = True, truncation = True, return_tensors = "pt").to("cuda")
             with torch.no_grad():
                 output = self.embedding_model(**inputs)

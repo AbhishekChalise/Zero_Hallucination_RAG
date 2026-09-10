@@ -36,18 +36,20 @@ def hybrid_data_dictonary():
     return hybrid_data
 
 def build_database():
+    vram_snapshot("Before Indexing")
 
     data_to_insert = hybrid_data_dictonary()
-    db = lancedb.connect("rag_data")
-    # Create the table and insert the data.
-    table = db.create_table("rag_corpus", data = data_to_insert)
-    # Creating the BM25 index.
-    table.create_fts_index("text")
 
-    vram_snapshot("Before Embedding")
+    vram_snapshot("After Indexing")
+
+    db = lancedb.connect("rag_data")
+    table = db.create_table("rag_corpus", data=data_to_insert)
+    table.create_fts_index("text")
+    print("Database and BM25 index built!")
+
     if getattr(config, "mode") == "vllm":
-        del llm.embedding_model
+        del llm.embedding_model          # Destroys the heavy model
+        llm.embedding_model = None      # Puts the empty placeholder back!
         torch.cuda.empty_cache()
-    vram_snapshot("After Embedding")
-if __name__ == "__main__":
-    build_database()
+
+    vram_snapshot("After Freeing Embedder")
