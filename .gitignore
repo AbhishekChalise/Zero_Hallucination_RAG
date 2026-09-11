@@ -37,4 +37,4 @@ __pycache__/
 data.json
 rag_data
 vram.log
-*.json
+*.jsonrag_data/rag_corpus.lance/
