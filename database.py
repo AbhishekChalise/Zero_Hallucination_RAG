@@ -61,7 +61,7 @@ def search_database(query: str, k:int = 5):
     clean_results = []
 
     for r in final_results:
-        score = 1.
+        score = r["_relevance_score"]
 
         clean_item = {
             "text": r["text"],

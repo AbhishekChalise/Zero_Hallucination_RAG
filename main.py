@@ -13,7 +13,7 @@ from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassific
 
 load_dotenv()
 
-# vram_snapshot("Before Init")
+vram_snapshot("Before Init")
 
 use_fp16 = True if getattr(config, "mode") == "vllm" else False
 
@@ -86,7 +86,7 @@ class LocalLLM:
         return embedder.embed_documents(texts)
 
     async def rerank(self, query: str, documents: list[str]):
-        # vram_snapshot("Before Rerank")
+        vram_snapshot("Before Rerank")
         if getattr(config, "mode") == "vllm":
             scores = []
             for doc in documents:
@@ -109,7 +109,7 @@ class LocalLLM:
             key= lambda x : x[1],
             reverse = True
         )
-        # vram_snapshot("After Rerank")
+        vram_snapshot("After Rerank")
 
         return ranked
 
