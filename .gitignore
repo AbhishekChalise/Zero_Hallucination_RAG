@@ -35,3 +35,6 @@ archive.zip
 .venv/
 __pycache__/
 data.json
+rag_data
+vram.log
+*.json
