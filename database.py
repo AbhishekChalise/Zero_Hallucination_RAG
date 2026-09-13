@@ -51,33 +51,49 @@ def build_database():
 
     vram_snapshot("After Freeing Embedder")
 
-def search_database(query: str, k:int = 5):
+def search_database(query: str, k:int = 5, fetch_k: int = 150):
     query_vector = llm.embedder_model([query])[0] # returns[[0.5]]  
     db = lancedb.connect("rag_data")
     table = db.open_table("rag_corpus")
-    results = table.search(query_type = "hybrid")
-    final_results = results.vector(query_vector).text(query).limit(5).to_list()
+    results = table.search(query_vector).limit(fetch_k).to_list()
+    bm25_results = table.search(query, query_type = "fts" ).limit(fetch_k).to_list()
 
     clean_results = []
+    fused_scores = {}
 
-    for r in final_results:
-        score = r["_relevance_score"]
+    for rank, item in enumerate(results):
+        score = 1 / (config.rrf_k + rank)
 
-        clean_item = {
-            "text": r["text"],
-            "title": r["title"],
-            "summary": r["summary"],
-            "score": score
+        fused_scores[item["text"]] = {
+            "score": score,
+            "title": item["title"],
+            "summary": item["summary"]
         }
 
-        clean_results.append(clean_item)
-    return clean_results
+    for rank, item in enumerate(bm25_results):
+        score = 1 / (config.rrf + rank)
+
+        if item["text"] in fused_scores:
+            fused_scores[item["text"]]["score"] += score
+
+        else:
+            fused_scores[item["text"]] = {
+                "score": score,
+                "title": item["title"],
+                "summary": item["summary"]
+            }
+
+    sorted_fuse = sorted(fused_scores.items(), key = lambda x: x[1]["score"], reverse = True)
+
+    final_results = sorted_fuse[:k]
+
+    
 
 if __name__ == "__main__":
     # 1. Build the database (you can comment this out after it runs once!)
     build_database()
     
-    # 2. Test the search!
+    # 2. Test the search!.
     print("\n=== SEARCH TEST ===")
     question = "Were Scott Derrickson and Ed Wood of the same nationality?"
     results = search_database(question, k=3)
