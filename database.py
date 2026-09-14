@@ -71,7 +71,7 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
         }
 
     for rank, item in enumerate(bm25_results):
-        score = 1 / (config.rrf + rank)
+        score = 1 / (config.rrf_k + rank)
 
         if item["text"] in fused_scores:
             fused_scores[item["text"]]["score"] += score
@@ -87,7 +87,15 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
 
     final_results = sorted_fuse[:k]
 
-    
+    for text, data in final_results:
+        clean_results.append({
+            "text": text,
+            "title": data["title"],
+            "summary": data["summary"],
+            "score": data["score"]
+        })
+
+    return clean_results
 
 if __name__ == "__main__":
     # 1. Build the database (you can comment this out after it runs once!)
