@@ -85,7 +85,7 @@ class LocalLLM:
         )
         return embedder.embed_documents(texts)
 
-    async def rerank(self, query: str, documents: list[str]):
+    def rerank(self, query: str, documents: list[str]):
         vram_snapshot("Before Rerank")
         if getattr(config, "mode") == "vllm":
             scores = []
@@ -118,3 +118,4 @@ llm = LocalLLM(
     embedding_model=config.embedding_model,
     reranker_model=config.reranker_model
 )
+

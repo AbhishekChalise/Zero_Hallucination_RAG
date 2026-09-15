@@ -102,3 +102,20 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
         })
 
     return clean_results
+
+if __name__ == "__main__":
+    # 1. Make sure the database is already built!
+    # build_database()
+    
+    print("\n=== RETRIEVAL & RERANKING TEST ===")
+    question = "Were Scott Derrickson and Ed Wood of the same nationality?"
+    
+    # We use k=3 to match the blog's top-3 output
+    results = search_database(question, k=3)
+    
+    print(f"Q: {question}")
+    print(f"top-3 reranked:")
+    
+    # Print it beautifully!
+    for res in results:
+        print(f"   ({res['score']:.3f}) {res['title']}")
