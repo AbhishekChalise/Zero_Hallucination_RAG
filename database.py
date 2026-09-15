@@ -9,6 +9,7 @@ def load_dataset():
 
     return my_list
 
+
 def hybrid_data_dictonary():
 
     data = load_dataset()
@@ -35,6 +36,7 @@ def hybrid_data_dictonary():
 
     return hybrid_data
 
+
 def build_database():
     vram_snapshot("Before Indexing")
 
@@ -50,6 +52,7 @@ def build_database():
     llm.unload_embedder()
 
     vram_snapshot("After Freeing Embedder")
+
 
 def search_database(query: str, k:int = 5, fetch_k: int = 150):
     query_vector = llm.embedder_model([query])[0] # returns[[0.5]]  
@@ -85,28 +88,17 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
 
     sorted_fuse = sorted(fused_scores.items(), key = lambda x: x[1]["score"], reverse = True)
 
-    final_results = sorted_fuse[:k]
+    candidate_text = [text for text,data in sorted_fuse]
+    ranked_docs = llm.rerank(query, candidate_text)
+    top_k = ranked_docs[:k]
 
-    for text, data in final_results:
+
+    for text, reranker_score in top_k:
         clean_results.append({
             "text": text,
-            "title": data["title"],
-            "summary": data["summary"],
-            "score": data["score"]
+            "title": fused_scores["title"],
+            "summary": fused_scores["summary"],
+            "score": fused_scores["score"]
         })
 
     return clean_results
-
-if __name__ == "__main__":
-    # 1. Build the database (you can comment this out after it runs once!)
-    build_database()
-    
-    # 2. Test the search!.
-    print("\n=== SEARCH TEST ===")
-    question = "Were Scott Derrickson and Ed Wood of the same nationality?"
-    results = search_database(question, k=3)
-    
-    for res in results:
-        print(f"Score: {res['score']:.4f} | Title: {res['title']}")
-        print(f"Text: {res['text'][:100]}...")
-        print("-" * 40)
