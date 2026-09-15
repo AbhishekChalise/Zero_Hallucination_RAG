@@ -98,7 +98,7 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
             "text": text,
             "title": fused_scores[text]["title"],
             "summary": fused_scores[text]["summary"],
-            "score": fused_scores[text]["score"]
+            "score": reranker_score
         })
 
     return clean_results
