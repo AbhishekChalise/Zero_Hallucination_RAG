@@ -96,9 +96,9 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
     for text, reranker_score in top_k:
         clean_results.append({
             "text": text,
-            "title": fused_scores["title"],
-            "summary": fused_scores["summary"],
-            "score": fused_scores["score"]
+            "title": fused_scores[text]["title"],
+            "summary": fused_scores[text]["summary"],
+            "score": fused_scores[text]["score"]
         })
 
     return clean_results
