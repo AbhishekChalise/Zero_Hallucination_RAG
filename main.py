@@ -118,4 +118,3 @@ llm = LocalLLM(
     embedding_model=config.embedding_model,
     reranker_model=config.reranker_model
 )
-
