@@ -102,3 +102,26 @@ def search_database(query: str, k:int = 5, fetch_k: int = 150):
         })
 
     return clean_results
+
+'''
+    clean_results = [
+    {
+        "text": "Scott Derrickson (born July 16, 1966) is an American director, screenwriter and producer.",
+        "title": "Scott Derrickson",
+        "summary": "This chunk introduces Scott Derrickson and his profession.",
+        "score": 0.999
+    },
+    {
+        "text": "Edward Davis Wood Jr. was an American filmmaker, actor, writer, producer, and director.",
+        "title": "Ed Wood",
+        "summary": "This chunk introduces Ed Wood and his profession.",
+        "score": 0.996
+    },
+    {
+        "text": "Doctor Strange is a 2016 American superhero film directed by Scott Derrickson.",
+        "title": "Doctor Strange (2016 film)",
+        "summary": "This chunk mentions the film Doctor Strange and its director.",
+        "score": 0.754
+    }
+]
+'''
